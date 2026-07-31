@@ -1,22 +1,20 @@
 import Url from "../models/url.model.js";
 import getNextSequence from "./counter.service.js";
 import { encodeBase62 } from "../utils/base62.js";
+import { getCachedUrl, cacheUrl } from "./redis.service.js";
 
 export const createShortUrlService = async (longUrl) => {
-    // Check if URL already exists
+
     const existingUrl = await Url.findOne({ longUrl });
 
     if (existingUrl) {
         return existingUrl;
     }
 
-    // Generate sequence number
     const sequence = await getNextSequence("url");
 
-    // Encode using Base62
     const shortCode = encodeBase62(sequence);
 
-    // Save to MongoDB
     const newUrl = await Url.create({
         longUrl,
         shortCode,
@@ -26,15 +24,37 @@ export const createShortUrlService = async (longUrl) => {
 };
 
 export const getLongUrl = async (shortCode) => {
+
+    const cachedUrl = await getCachedUrl(shortCode);
+
+    if (cachedUrl) {
+
+        console.log("Cache Hit");
+
+        await Url.updateOne(
+            { shortCode },
+            { $inc: { clickCount: 1 } }
+        );
+
+        return {
+            longUrl: cachedUrl,
+        };
+    }
+
+    console.log("Cache Miss");
+
     const url = await Url.findOne({ shortCode });
 
     if (!url) {
         return null;
     }
 
-    url.clickCount += 1;
+    await Url.updateOne(
+        { shortCode },
+        { $inc: { clickCount: 1 } }
+    );
 
-    await url.save();
+    await cacheUrl(shortCode, url.longUrl);
 
     return url;
 };
