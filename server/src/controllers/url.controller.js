@@ -5,6 +5,7 @@ import validateUrl from "../validators/url.validator.js";
 import {
     createShortUrlService,
     getLongUrl,
+    getUrlAnalytics,
 } from "../services/url.service.js";
 
 export const createShortUrl = asyncHandler(async (req, res) => {
@@ -30,11 +31,27 @@ export const createShortUrl = asyncHandler(async (req, res) => {
 export const redirectUrl = asyncHandler(async (req, res) => {
     const { shortCode } = req.params;
 
-    const url = await getLongUrl(shortCode);
+    const url = await getLongUrl(shortCode, req);
 
     if (!url) {
         throw new ApiError(404, "Short URL not found");
     }
 
     res.redirect(url.longUrl);
+});
+
+export const getAnalytics = asyncHandler(async (req, res) => {
+    const { shortCode } = req.params;
+
+    const analytics = await getUrlAnalytics(shortCode);
+
+    if (!analytics) {
+        throw new ApiError(404, "Short URL not found");
+    }
+
+    res.status(200).json({
+        success: true,
+        message: "Analytics fetched successfully",
+        data: analytics,
+    });
 });
