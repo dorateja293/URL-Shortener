@@ -1,11 +1,10 @@
 import express from "express";
+import urlRoutes from "./routes/url.routes.js";
 
 const app = express();
 
 app.use(express.json());
 
-app.get("/", (req, res) => {
-    res.send("URL Shortener API Running...");
-});
+app.use("/api/url", urlRoutes);
 
 export default app;
