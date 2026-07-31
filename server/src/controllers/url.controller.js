@@ -1,6 +1,7 @@
 import Url from "../models/url.model.js";
 import getNextSequence from "../services/counter.service.js";
 import { encodeBase62 } from "../utils/base62.js";
+import { getLongUrl } from "../services/url.service.js";
 
 export const createShortUrl = async (req, res) => {
     try {
@@ -57,3 +58,28 @@ export const createShortUrl = async (req, res) => {
         });
     }
 };
+
+export const redirectUrl = async (req, res) => {
+    try {
+        const { shortCode } = req.params;
+
+        const url = await getLongUrl(shortCode);
+
+        if (!url) {
+            return res.status(404).json({
+                success: false,
+                message: "Short URL not found",
+            });
+        }
+
+        return res.redirect(url.longUrl);
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+        });
+    }
+};
+
