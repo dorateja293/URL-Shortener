@@ -43,9 +43,28 @@ export const saveAnalytics = async (req, shortCode) => {
 };
 
 export const getAnalyticsSummary = async (shortCode) => {
-    const [totalClicks, recentClicks, browsers, operatingSystems, devices, referrers] =
+    const now = new Date();
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const startOfYesterday = new Date(startOfToday);
+    startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+
+    const startOfWeek = new Date(startOfToday);
+    startOfWeek.setDate(startOfWeek.getDate() - 6);
+
+    const [totalClicks, todayClicks, yesterdayClicks, weekClicks, recentClicks, browsers, operatingSystems, devices, referrers, dailyClicks] =
         await Promise.all([
             Analytics.countDocuments({ shortCode }),
+            Analytics.countDocuments({ shortCode, timestamp: { $gte: startOfToday } }),
+            Analytics.countDocuments({
+                shortCode,
+                timestamp: {
+                    $gte: startOfYesterday,
+                    $lt: startOfToday,
+                },
+            }),
+            Analytics.countDocuments({ shortCode, timestamp: { $gte: startOfWeek } }),
             Analytics.find({ shortCode })
                 .sort({ timestamp: -1 })
                 .limit(20)
@@ -70,6 +89,26 @@ export const getAnalyticsSummary = async (shortCode) => {
                 { $group: { _id: "$referrer", count: { $sum: 1 } } },
                 { $sort: { count: -1 } },
             ]),
+            Analytics.aggregate([
+                {
+                    $match: {
+                        shortCode,
+                        timestamp: { $gte: startOfWeek },
+                    },
+                },
+                {
+                    $group: {
+                        _id: {
+                            $dateToString: {
+                                format: "%Y-%m-%d",
+                                date: "$timestamp",
+                            },
+                        },
+                        count: { $sum: 1 },
+                    },
+                },
+                { $sort: { _id: 1 } },
+            ]),
         ]);
 
     const normalizeBreakdown = (items) =>
@@ -80,6 +119,13 @@ export const getAnalyticsSummary = async (shortCode) => {
 
     return {
         totalClicks,
+        todayClicks,
+        yesterdayClicks,
+        weekClicks,
+        dailyClicks: dailyClicks.map((item) => ({
+            date: item._id,
+            clicks: item.count,
+        })),
         recentClicks,
         browsers: normalizeBreakdown(browsers),
         operatingSystems: normalizeBreakdown(operatingSystems),

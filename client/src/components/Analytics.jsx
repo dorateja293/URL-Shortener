@@ -11,6 +11,19 @@ import {
   Clock,
   Compass
 } from 'lucide-react';
+import {
+  Cell,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis
+} from 'recharts';
+
+const CHART_COLORS = ['#58A6FF', '#3FB950', '#8957e5', '#d29922', '#f85149'];
 
 function Analytics({
   selectedCode,
@@ -141,6 +154,44 @@ function Analytics({
       </div>
     );
   };
+
+  const renderPieCard = (title, items) => (
+    <div className="glass-card breakdown-card glow-indigo">
+      <h3 className="breakdown-header">{title}</h3>
+      {!items || items.length === 0 ? (
+        <div style={{ padding: '1rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+          No data logged yet.
+        </div>
+      ) : (
+        <div style={{ height: 220 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={items}
+                dataKey="count"
+                nameKey="name"
+                outerRadius={78}
+                innerRadius={42}
+                paddingAngle={2}
+              >
+                {items.map((item, index) => (
+                  <Cell key={item.name} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{
+                  background: '#161B22',
+                  border: '1px solid #30363D',
+                  borderRadius: 6,
+                  color: '#E6EDF3'
+                }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </div>
+  );
 
   // 1. Initial State: No code selected
   if (!selectedCode && !data) {
@@ -298,6 +349,73 @@ function Analytics({
             <span className="stat-label">Logged Clicks</span>
           </div>
         </div>
+
+        <div className="stat-box">
+          <div className="stat-icon-wrapper teal">
+            <Clock size={22} />
+          </div>
+          <div className="stat-details">
+            <span className="stat-value">{data.todayClicks || 0}</span>
+            <span className="stat-label">Today</span>
+          </div>
+        </div>
+
+        <div className="stat-box">
+          <div className="stat-icon-wrapper purple">
+            <Clock size={22} />
+          </div>
+          <div className="stat-details">
+            <span className="stat-value">{data.yesterdayClicks || 0}</span>
+            <span className="stat-label">Yesterday</span>
+          </div>
+        </div>
+
+        <div className="stat-box">
+          <div className="stat-icon-wrapper indigo">
+            <Calendar size={22} />
+          </div>
+          <div className="stat-details">
+            <span className="stat-value">{data.weekClicks || 0}</span>
+            <span className="stat-label">This Week</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="glass-card glow-indigo">
+        <h3 className="breakdown-header">
+          <BarChart3 size={18} style={{ color: 'var(--primary)' }} />
+          Clicks Over Time
+        </h3>
+        <div style={{ height: 260, marginTop: '1rem' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data.dailyClicks || []}>
+              <XAxis dataKey="date" stroke="#8b949e" fontSize={12} />
+              <YAxis allowDecimals={false} stroke="#8b949e" fontSize={12} />
+              <Tooltip
+                contentStyle={{
+                  background: '#161B22',
+                  border: '1px solid #30363D',
+                  borderRadius: 6,
+                  color: '#E6EDF3'
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="clicks"
+                stroke="#58A6FF"
+                strokeWidth={2}
+                dot={{ r: 3 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className="breakdown-grid">
+        {renderPieCard('Browser Pie Chart', data.browsers)}
+        {renderPieCard('OS Pie Chart', data.operatingSystems)}
+        {renderPieCard('Device Pie Chart', data.devices)}
+        {renderPieCard('Top Referrers', data.referrers)}
       </div>
 
       {/* breakdowns */}
