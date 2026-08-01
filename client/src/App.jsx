@@ -9,6 +9,18 @@ function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedAnalyticsCode, setSelectedAnalyticsCode] = useState('');
   const [history, setHistory] = useState([]);
+  const [historyPagination, setHistoryPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
+  const [historyQuery, setHistoryQuery] = useState({
+    page: 1,
+    limit: 10,
+    search: '',
+    sort: 'createdAt',
+  });
   const [isSyncingHistory, setIsSyncingHistory] = useState(false);
 
   // Authentication States
@@ -84,15 +96,29 @@ function App() {
   }, [fetchProfile, token]);
 
   // Sync user-owned links from the server
-  const syncHistoryClicks = useCallback(async () => {
+  const syncHistoryClicks = useCallback(async (queryOverrides = {}) => {
     if (!token) {
       setHistory([]);
       return;
     }
 
+    const nextQuery = {
+      page: 1,
+      limit: 10,
+      search: '',
+      sort: 'createdAt',
+      ...queryOverrides,
+    };
+    const params = new URLSearchParams();
+    Object.entries(nextQuery).forEach(([key, value]) => {
+      if (value) {
+        params.set(key, value);
+      }
+    });
+
     setIsSyncingHistory(true);
     try {
-      const res = await fetch('/api/url/my', {
+      const res = await fetch(`/api/url/my?${params.toString()}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -104,6 +130,8 @@ function App() {
       }
 
       setHistory(data.data);
+      setHistoryPagination(data.pagination);
+      setHistoryQuery(nextQuery);
     } catch (err) {
       console.error('Error syncing history', err);
     } finally {
@@ -239,6 +267,8 @@ function App() {
         {activeTab === 'dashboard' ? (
           <Dashboard
             history={history}
+            pagination={historyPagination}
+            query={historyQuery}
             token={token}
             addToHistory={addToHistory}
             removeFromHistory={removeFromHistory}
