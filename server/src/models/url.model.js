@@ -26,6 +26,17 @@ const urlSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+
+        isCustomAlias: {
+            type: Boolean,
+            default: false,
+        },
+
+        expiresAt: {
+            type: Date,
+            default: null,
+            index: true,
+        },
     },
     {
         timestamps: true,
@@ -33,6 +44,9 @@ const urlSchema = new mongoose.Schema(
 );
 
 urlSchema.index({ userId: 1, longUrl: 1 });
+urlSchema.index({ userId: 1, createdAt: -1 });
+urlSchema.index({ userId: 1, clickCount: -1 });
+urlSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 const Url = mongoose.model("Url", urlSchema);
 
