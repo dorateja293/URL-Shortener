@@ -15,8 +15,17 @@ const recordAnalytics = async (req, shortCode) => {
     }
 };
 
-export const createShortUrlService = async (longUrl) => {
-    const existingUrl = await Url.findOne({ longUrl });
+const serializeUrl = (url, baseUrl) => ({
+    longUrl: url.longUrl,
+    shortCode: url.shortCode,
+    shortUrl: `${baseUrl}/${url.shortCode}`,
+    clickCount: url.clickCount,
+    clicks: url.clickCount,
+    createdAt: url.createdAt,
+});
+
+export const createShortUrlService = async (longUrl, userId) => {
+    const existingUrl = await Url.findOne({ longUrl, userId });
 
     if (existingUrl) {
         return existingUrl;
@@ -29,9 +38,22 @@ export const createShortUrlService = async (longUrl) => {
     const newUrl = await Url.create({
         longUrl,
         shortCode,
+        userId,
     });
 
     return newUrl;
+};
+
+export const getUserUrls = async (userId, baseUrl) => {
+    const urls = await Url.find({ userId }).sort({ createdAt: -1 });
+
+    return urls.map((url) => serializeUrl(url, baseUrl));
+};
+
+export const deleteUserUrl = async (shortCode, userId) => {
+    const result = await Url.deleteOne({ shortCode, userId });
+
+    return result.deletedCount > 0;
 };
 
 export const getLongUrl = async (shortCode, req) => {
@@ -68,8 +90,8 @@ export const getLongUrl = async (shortCode, req) => {
     return url;
 };
 
-export const getUrlAnalytics = async (shortCode) => {
-    const url = await Url.findOne({ shortCode }).select(
+export const getUrlAnalytics = async (shortCode, userId) => {
+    const url = await Url.findOne({ shortCode, userId }).select(
         "longUrl shortCode clickCount createdAt"
     );
 

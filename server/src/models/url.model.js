@@ -15,6 +15,13 @@ const urlSchema = new mongoose.Schema(
             index: true,
         },
 
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+            index: true,
+        },
+
         clickCount: {
             type: Number,
             default: 0,
@@ -24,6 +31,8 @@ const urlSchema = new mongoose.Schema(
         timestamps: true,
     }
 );
+
+urlSchema.index({ userId: 1, longUrl: 1 });
 
 const Url = mongoose.model("Url", urlSchema);
 
