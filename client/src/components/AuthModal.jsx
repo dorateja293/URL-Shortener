@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Mail, Lock, User, AlertCircle } from 'lucide-react';
+import { apiUrl } from '../utils/api';
 
 function AuthModal({ isOpen, onClose, onSuccess }) {
   const [activeTab, setActiveTab] = useState('login');
@@ -13,7 +14,7 @@ function AuthModal({ isOpen, onClose, onSuccess }) {
 
   const handleGoogleLogin = () => {
     // Redirect browser to backend Google OAuth initiation endpoint
-    window.location.href = '/api/auth/google';
+    window.location.href = apiUrl('/api/auth/google');
   };
 
   const validate = () => {
@@ -52,7 +53,7 @@ function AuthModal({ isOpen, onClose, onSuccess }) {
     const payload = activeTab === 'login' ? { email, password } : { name, email, password };
 
     try {
-      const res = await fetch(endpoint, {
+      const res = await fetch(apiUrl(endpoint), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   Download
 } from 'lucide-react';
+import { apiUrl } from '../utils/api';
 
 
 function Dashboard({ 
@@ -78,7 +79,7 @@ function Dashboard({
 
     setLoading(true);
     try {
-      const res = await fetch('/api/url/shorten', {
+      const res = await fetch(apiUrl('/api/url/shorten'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -132,7 +133,7 @@ function Dashboard({
   const downloadQrCode = async (shortUrl, shortCode) => {
     setIsDownloadingQr(true);
     try {
-      const response = await fetch(`/api/url/${shortCode}/qrcode`, {
+      const response = await fetch(apiUrl(`/api/url/${shortCode}/qrcode`), {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -169,7 +170,7 @@ function Dashboard({
     }
 
     try {
-      const response = await fetch(`/api/url/${result.shortCode}/qrcode`, {
+      const response = await fetch(apiUrl(`/api/url/${result.shortCode}/qrcode`), {
         headers: {
           Authorization: `Bearer ${token}`,
         },

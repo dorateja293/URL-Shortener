@@ -11,6 +11,7 @@ import {
   Clock,
   Compass
 } from 'lucide-react';
+import { apiUrl } from '../utils/api';
 import {
   Cell,
   Line,
@@ -61,7 +62,7 @@ function Analytics({
     setError('');
     try {
       const cleanCode = cleanShortCode(code);
-      const res = await fetch(`/api/url/${cleanCode}/analytics`, {
+      const res = await fetch(apiUrl(`/api/url/${cleanCode}/analytics`), {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -208,7 +209,7 @@ function Analytics({
             <div className="input-glow-wrapper">
               <input
                 type="text"
-                placeholder="Enter short code or short link (e.g. abcd or http://localhost:5000/abcd)"
+                placeholder="Enter short code or short link (e.g. abcd or http://65.2.81.212/abcd)"
                 className="url-input"
                 value={inputCode}
                 onChange={(e) => setInputCode(e.target.value)}

@@ -3,6 +3,7 @@ import { LayoutDashboard, BarChart3, Link2, LogOut, Moon, Sun } from 'lucide-rea
 import Dashboard from './components/Dashboard';
 import Analytics from './components/Analytics';
 import AuthModal from './components/AuthModal';
+import { apiUrl } from './utils/api';
 import './App.css';
 
 function App() {
@@ -66,7 +67,7 @@ function App() {
   // Fetch user profile using token
   const fetchProfile = useCallback(async (authToken) => {
     try {
-      const res = await fetch('/api/auth/me', {
+      const res = await fetch(apiUrl('/api/auth/me'), {
         headers: {
           'Authorization': `Bearer ${authToken}`
         }
@@ -126,7 +127,7 @@ function App() {
 
     setIsSyncingHistory(true);
     try {
-      const res = await fetch(`/api/url/my?${params.toString()}`, {
+      const res = await fetch(apiUrl(`/api/url/my?${params.toString()}`), {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -169,7 +170,7 @@ function App() {
     if (!token) return;
 
     try {
-      const res = await fetch(`/api/url/${shortCode}`, {
+      const res = await fetch(apiUrl(`/api/url/${shortCode}`), {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
