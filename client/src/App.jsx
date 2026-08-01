@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { LayoutDashboard, BarChart3, Link2, LogOut } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Link2, LogOut, Moon, Sun } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import Analytics from './components/Analytics';
 import AuthModal from './components/AuthModal';
@@ -33,7 +33,15 @@ function App() {
   });
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('snipurl_theme') || 'dark';
+  });
   const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('snipurl_theme', theme);
+  }, [theme]);
 
   // Click outside listener for user dropdown
   useEffect(() => {
@@ -218,6 +226,15 @@ function App() {
               Analytics
             </button>
           </nav>
+
+          <button
+            className="theme-toggle"
+            onClick={() => setTheme((current) => current === 'dark' ? 'light' : 'dark')}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
 
           {/* User Widget */}
           {user ? (

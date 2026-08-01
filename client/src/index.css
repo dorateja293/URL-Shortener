@@ -9,6 +9,12 @@
   --panel-bg: #161B22;
   --panel-border: #30363D;
   --panel-border-glow: transparent;
+  --surface-bg: #0D1117;
+  --surface-hover: #21262d;
+  --control-bg: #21262d;
+  --control-hover: #30363d;
+  --table-hover: rgba(255, 255, 255, 0.03);
+  --overlay-bg: rgba(8, 12, 20, 0.75);
 
   --primary: #58A6FF;
   --primary-hover: #1f6feb;
@@ -31,6 +37,37 @@
   --transition-smooth: all 0.2s cubic-bezier(0.3, 0, 0.66, 1);
   --shadow-lg: 0 8px 24px rgba(1, 4, 9, 0.2);
   --shadow-neon: none;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg-main: #f6f8fa;
+  --panel-bg: #ffffff;
+  --panel-border: #d0d7de;
+  --surface-bg: #f6f8fa;
+  --surface-hover: #f3f4f6;
+  --control-bg: #ffffff;
+  --control-hover: #f3f4f6;
+  --table-hover: rgba(31, 35, 40, 0.04);
+  --overlay-bg: rgba(246, 248, 250, 0.72);
+
+  --primary: #0969da;
+  --primary-hover: #0757b3;
+  --primary-glow: rgba(9, 105, 218, 0.15);
+  --secondary: #0969da;
+  --secondary-glow: rgba(9, 105, 218, 0.12);
+  --accent: #8250df;
+
+  --text-primary: #1f2328;
+  --text-secondary: #57606a;
+  --text-muted: #8c959f;
+
+  --success: #1a7f37;
+  --error: #cf222e;
+  --warning: #9a6700;
+
+  --shadow-lg: 0 8px 24px rgba(140, 149, 159, 0.2);
+  color-scheme: light;
 }
 
 /* Resets */
@@ -98,7 +135,7 @@ h1, h2, h3, h4 {
   font-family: var(--font-display);
   font-size: 1.75rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #ffffff 0%, var(--text-secondary) 100%);
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   transition: var(--transition-smooth);
@@ -116,7 +153,7 @@ h1, h2, h3, h4 {
   align-items: center;
   margin-bottom: 3.5rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--panel-border);
 }
 
 .nav-links {
@@ -146,8 +183,26 @@ h1, h2, h3, h4 {
 }
 
 .nav-btn.active {
-  background: #21262d;
+  background: var(--control-bg);
   border-color: var(--panel-border);
+  color: var(--text-primary);
+}
+
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid var(--panel-border);
+  background: var(--control-bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: var(--transition-smooth);
+}
+
+.theme-toggle:hover {
+  background: var(--control-hover);
   color: var(--text-primary);
 }
 
@@ -188,7 +243,7 @@ h1, h2, h3, h4 {
 
 .url-input {
   width: 100%;
-  background: #0D1117;
+  background: var(--surface-bg);
   border: 1px solid var(--panel-border);
   color: var(--text-primary);
   padding: 0.75rem 1rem;
@@ -197,6 +252,12 @@ h1, h2, h3, h4 {
   border-radius: 6px;
   outline: none;
   transition: var(--transition-smooth);
+}
+
+.url-input option,
+.history-search option {
+  background: var(--panel-bg);
+  color: var(--text-primary);
 }
 
 .url-input:focus {
@@ -298,7 +359,7 @@ h1, h2, h3, h4 {
 
 .result-row {
   display: flex;
-  background: #0d1117;
+  background: var(--surface-bg);
   border: 1px solid var(--panel-border);
   padding: 0.75rem 1rem;
   border-radius: 6px;
@@ -316,7 +377,7 @@ h1, h2, h3, h4 {
 }
 
 .btn-action {
-  background: #21262d;
+  background: var(--control-bg);
   border: 1px solid var(--panel-border);
   color: var(--text-secondary);
   width: 38px;
@@ -348,9 +409,9 @@ h1, h2, h3, h4 {
 
 .btn-secondary {
   flex-grow: 1;
-  background: #21262d;
+  background: var(--control-bg);
   border: 1px solid var(--panel-border);
-  color: #c9d1d9;
+  color: var(--text-primary);
   padding: 0.5rem 1rem;
   border-radius: 6px;
   font-family: var(--font-sans);
@@ -365,7 +426,7 @@ h1, h2, h3, h4 {
 }
 
 .btn-secondary:hover {
-  background: #30363d;
+  background: var(--control-hover);
   border-color: #8b949e;
 }
 
@@ -375,7 +436,7 @@ h1, h2, h3, h4 {
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  background: #0D1117;
+  background: var(--surface-bg);
   border: 1px solid var(--panel-border);
   padding: 1.25rem;
   border-radius: 6px;
@@ -430,8 +491,8 @@ h1, h2, h3, h4 {
 
 .history-search {
   width: 100%;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--control-bg);
+  border: 1px solid var(--panel-border);
   color: var(--text-primary);
   padding: 0.5rem 1rem 0.5rem 2.2rem;
   border-radius: 9999px;
@@ -441,7 +502,7 @@ h1, h2, h3, h4 {
 }
 
 .history-search:focus {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--control-bg);
   border-color: rgba(99, 102, 241, 0.4);
 }
 
@@ -457,7 +518,7 @@ h1, h2, h3, h4 {
   width: 100%;
   overflow-x: auto;
   border-radius: 6px;
-  background: #161B22;
+  background: var(--panel-bg);
   border: 1px solid var(--panel-border);
 }
 
@@ -469,7 +530,7 @@ h1, h2, h3, h4 {
 }
 
 .history-table th {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-bg);
   padding: 1rem 1.25rem;
   font-weight: 600;
   color: var(--text-secondary);
@@ -484,7 +545,7 @@ h1, h2, h3, h4 {
 }
 
 .history-table tr:hover td {
-  background: rgba(255, 255, 255, 0.01);
+  background: var(--table-hover);
 }
 
 .original-url-cell {
@@ -884,7 +945,7 @@ h1, h2, h3, h4 {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(8, 12, 20, 0.75);
+  background: var(--overlay-bg);
   backdrop-filter: blur(12px);
   z-index: 100;
   display: grid;
@@ -986,7 +1047,7 @@ h1, h2, h3, h4 {
 
 .auth-input {
   width: 100%;
-  background: #0D1117;
+  background: var(--surface-bg);
   border: 1px solid var(--panel-border);
   color: var(--text-primary);
   padding: 0.75rem 1rem 0.75rem 2.5rem;
@@ -1038,8 +1099,8 @@ h1, h2, h3, h4 {
 }
 
 .btn-google {
-  background: #21262d;
-  color: #c9d1d9;
+  background: var(--control-bg);
+  color: var(--text-primary);
   border: 1px solid var(--panel-border);
   padding: 0.75rem 1rem;
   border-radius: 6px;
@@ -1055,7 +1116,7 @@ h1, h2, h3, h4 {
 }
 
 .btn-google:hover {
-  background: #30363d;
+  background: var(--control-hover);
   border-color: #8b949e;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
@@ -1075,7 +1136,7 @@ h1, h2, h3, h4 {
   width: 38px;
   height: 38px;
   border-radius: 9999px;
-  background: #21262d;
+  background: var(--control-bg);
   color: var(--primary);
   border: 1px solid var(--panel-border);
   font-family: var(--font-display);
@@ -1165,4 +1226,3 @@ h1, h2, h3, h4 {
   background: rgba(239, 68, 68, 0.08);
   color: #ef4444;
 }
-

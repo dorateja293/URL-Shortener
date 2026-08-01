@@ -180,10 +180,10 @@ function Analytics({
               </Pie>
               <Tooltip
                 contentStyle={{
-                  background: '#161B22',
-                  border: '1px solid #30363D',
+                  background: 'var(--panel-bg)',
+                  border: '1px solid var(--panel-border)',
                   borderRadius: 6,
-                  color: '#E6EDF3'
+                  color: 'var(--text-primary)'
                 }}
               />
             </PieChart>
@@ -393,10 +393,10 @@ function Analytics({
               <YAxis allowDecimals={false} stroke="#8b949e" fontSize={12} />
               <Tooltip
                 contentStyle={{
-                  background: '#161B22',
-                  border: '1px solid #30363D',
+                  background: 'var(--panel-bg)',
+                  border: '1px solid var(--panel-border)',
                   borderRadius: 6,
-                  color: '#E6EDF3'
+                  color: 'var(--text-primary)'
                 }}
               />
               <Line
