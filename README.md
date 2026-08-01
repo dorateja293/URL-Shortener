@@ -62,6 +62,8 @@ Backend:
 Deployment:
 - AWS S3 static website hosting
 - AWS EC2
+- Docker
+- GitHub Actions CI/CD
 - PM2
 - Nginx
 - MongoDB Atlas
@@ -219,6 +221,48 @@ npm run build
 ```
 
 Upload `client/dist` to the S3 static website bucket.
+
+## Docker
+
+Run the full stack locally with Docker:
+
+```bash
+docker compose up -d --build
+```
+
+Frontend:
+
+```text
+http://localhost:8080
+```
+
+Backend:
+
+```text
+http://localhost:5000
+```
+
+Build frontend with a production API URL:
+
+```bash
+VITE_API_URL=http://65.2.81.212 docker compose up -d --build
+```
+
+## CI/CD
+
+GitHub Actions workflows are included:
+
+- `.github/workflows/ci.yml` runs backend syntax checks, frontend lint/build, and Docker image builds.
+- `.github/workflows/deploy.yml` deploys to EC2 over SSH with Docker Compose when manually triggered.
+
+Required GitHub secrets for deployment:
+
+```text
+EC2_HOST
+EC2_USER
+EC2_SSH_KEY
+EC2_APP_DIR
+```
 
 ## Deployment
 

@@ -293,7 +293,58 @@ Log out and log back in, then verify:
 docker --version
 ```
 
-## 12. Verification
+Run the project with Docker Compose:
+
+```bash
+cd ~/URL-Shortener
+docker compose up -d --build
+docker compose ps
+```
+
+For production frontend builds, set:
+
+```bash
+export VITE_API_URL=http://65.2.81.212
+docker compose up -d --build
+```
+
+Useful commands:
+
+```bash
+docker compose logs -f backend
+docker compose restart backend
+docker compose down
+```
+
+## 12. GitHub Actions CI/CD
+
+Two workflows are included:
+
+```text
+.github/workflows/ci.yml
+.github/workflows/deploy.yml
+```
+
+CI runs on pushes and pull requests to `main`:
+
+- backend dependency install
+- backend JavaScript syntax checks
+- frontend lint
+- frontend build
+- Docker image builds
+
+Deployment is manually triggered from GitHub Actions and connects to EC2 over SSH.
+
+Add these repository secrets:
+
+```text
+EC2_HOST=65.2.81.212
+EC2_USER=ubuntu
+EC2_SSH_KEY=<private key>
+EC2_APP_DIR=/home/ubuntu/URL-Shortener
+```
+
+## 13. Verification
 
 Check PM2:
 
@@ -322,7 +373,7 @@ Check public backend:
 curl http://65.2.81.212/health
 ```
 
-## 13. Update Deployment
+## 14. Update Deployment
 
 When code changes:
 
