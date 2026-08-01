@@ -70,20 +70,6 @@ Deployment:
 
 Add screenshots in `docs/screenshots/` and reference them here:
 
-```text
-docs/screenshots/home.png
-docs/screenshots/login.png
-docs/screenshots/dashboard.png
-docs/screenshots/analytics.png
-docs/screenshots/url-creation.png
-docs/screenshots/qrcode.png
-```
-
-Example:
-
-```md
-![Dashboard](docs/screenshots/dashboard.png)
-```
 
 ## API Documentation
 
