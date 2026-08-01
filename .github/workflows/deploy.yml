@@ -20,7 +20,10 @@ jobs:
           script: |
             set -e
             cd ${{ secrets.EC2_APP_DIR }}
-            git pull origin main
+            git fetch origin main
+            git stash push -u -m "pre-deploy-$(date +%Y%m%d-%H%M%S)" || true
+            git branch "backup/pre-deploy-$(date +%Y%m%d-%H%M%S)" HEAD || true
+            git reset --hard origin/main
             docker compose down
             docker compose up -d --build
             docker image prune -f
