@@ -266,4 +266,4 @@ EC2_APP_DIR
 
 ## Deployment
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for the full EC2, Redis, PM2, Nginx, MongoDB Atlas, S3, Google OAuth, and CORS deployment guide.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the full EC2, Redis, PM2, Nginx, MongoDB Atlas, S3, Google OAuth, and CORS deployment guide..
