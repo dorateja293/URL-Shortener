@@ -8,20 +8,33 @@ export const getCachedUrl = async (shortCode) => {
     }
 
     try {
-        return await redisClient.get(shortCode);
+        const value = await redisClient.get(shortCode);
+
+        if (!value) {
+            return null;
+        }
+
+        try {
+            return JSON.parse(value);
+        } catch {
+            return {
+                longUrl: value,
+                expiresAt: null,
+            };
+        }
     } catch (error) {
         console.warn(`Redis read failed: ${error.message}`);
         return null;
     }
 };
 
-export const cacheUrl = async (shortCode, longUrl) => {
+export const cacheUrl = async (shortCode, urlData) => {
     if (!redisClient.isReady) {
         return;
     }
 
     try {
-        await redisClient.set(shortCode, longUrl, {
+        await redisClient.set(shortCode, JSON.stringify(urlData), {
             EX: CACHE_EXPIRY,
         });
     } catch (error) {
