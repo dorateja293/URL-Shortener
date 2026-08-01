@@ -15,6 +15,8 @@ import {
 
 function Dashboard({ 
   history, 
+  pagination,
+  query,
   token,
   addToHistory, 
   removeFromHistory, 
@@ -24,12 +26,17 @@ function Dashboard({
   openAuthModal
 }) {
   const [longUrl, setLongUrl] = useState('');
+  const [customAlias, setCustomAlias] = useState('');
+  const [expiresIn, setExpiresIn] = useState('');
+  const [expiresAt, setExpiresAt] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(query.search || '');
+  const [sortBy, setSortBy] = useState(query.sort || 'createdAt');
   const [copiedCode, setCopiedCode] = useState('');
   const [result, setResult] = useState(null);
   const [showQr, setShowQr] = useState(false);
+  const [qrPreviewUrl, setQrPreviewUrl] = useState('');
   const [isDownloadingQr, setIsDownloadingQr] = useState(false);
 
   // Instant local validation
@@ -55,6 +62,7 @@ function Dashboard({
     setError('');
     setResult(null);
     setShowQr(false);
+    setQrPreviewUrl('');
 
     if (!token) {
       setError('Please sign in to create and manage your links.');
@@ -76,7 +84,12 @@ function Dashboard({
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ longUrl }),
+        body: JSON.stringify({
+          longUrl,
+          customAlias: customAlias.trim() || undefined,
+          expiresIn: expiresIn || undefined,
+          expiresAt: expiresAt || undefined,
+        }),
       });
 
       const data = await res.json();
@@ -89,12 +102,17 @@ function Dashboard({
         shortCode: data.data.shortCode,
         shortUrl: data.data.shortUrl,
         clicks: data.data.clickCount || 0,
+        expiresAt: data.data.expiresAt,
+        isCustomAlias: data.data.isCustomAlias,
         createdAt: data.data.createdAt
       };
 
       setResult(newUrl);
       addToHistory(newUrl);
       setLongUrl('');
+      setCustomAlias('');
+      setExpiresIn('');
+      setExpiresAt('');
       
 
 
@@ -114,8 +132,14 @@ function Dashboard({
   const downloadQrCode = async (shortUrl, shortCode) => {
     setIsDownloadingQr(true);
     try {
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(shortUrl)}`;
-      const response = await fetch(qrUrl);
+      const response = await fetch(`/api/url/${shortCode}/qrcode`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to generate QR code');
+      }
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
       
@@ -133,11 +157,42 @@ function Dashboard({
     }
   };
 
-  const filteredHistory = history.filter(
-    (item) =>
-      item.longUrl.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.shortCode.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const toggleQrPreview = async () => {
+    if (showQr) {
+      setShowQr(false);
+      return;
+    }
+
+    if (qrPreviewUrl) {
+      setShowQr(true);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/url/${result.shortCode}/qrcode`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to generate QR code');
+      }
+      const blob = await response.blob();
+      setQrPreviewUrl(URL.createObjectURL(blob));
+      setShowQr(true);
+    } catch (err) {
+      setError(err.message || 'Failed to generate QR code');
+    }
+  };
+
+  const refreshHistory = (page = 1) => {
+    syncHistoryClicks({
+      page,
+      limit: query.limit,
+      search: searchQuery.trim(),
+      sort: sortBy,
+    });
+  };
 
   return (
     <div>
@@ -183,6 +238,39 @@ function Dashboard({
           </button>
         </form>
 
+        <div className="form-group" style={{ marginTop: '0.75rem' }}>
+          <div className="input-glow-wrapper">
+            <input
+              type="text"
+              placeholder="Custom alias (optional, e.g. openai)"
+              className="url-input"
+              value={customAlias}
+              onChange={(e) => setCustomAlias(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+          <select
+            className="url-input"
+            value={expiresIn}
+            onChange={(e) => { setExpiresIn(e.target.value); setExpiresAt(''); }}
+            disabled={loading}
+            style={{ maxWidth: '180px' }}
+          >
+            <option value="">No expiry</option>
+            <option value="1d">1 day</option>
+            <option value="7d">7 days</option>
+            <option value="30d">30 days</option>
+          </select>
+          <input
+            type="date"
+            className="url-input"
+            value={expiresAt}
+            onChange={(e) => { setExpiresAt(e.target.value); setExpiresIn(''); }}
+            disabled={loading}
+            style={{ maxWidth: '170px' }}
+          />
+        </div>
+
         {error && (
           <div className="validation-error">
             <AlertTriangle size={16} />
@@ -205,7 +293,7 @@ function Dashboard({
                 </button>
               </div>
               <div className="result-buttons">
-                <button className="btn-secondary" onClick={() => setShowQr(!showQr)}>
+                <button className="btn-secondary" onClick={toggleQrPreview}>
                   <QrCode size={18} />
                   {showQr ? 'Hide QR Code' : 'Generate QR Code'}
                 </button>
@@ -220,7 +308,7 @@ function Dashboard({
               <div className="qr-panel">
                 <div className="qr-code-wrapper">
                   <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(result.shortUrl)}`}
+                    src={qrPreviewUrl}
                     alt="QR Code"
                     width="130"
                     height="130"
@@ -248,7 +336,7 @@ function Dashboard({
             <span>Your Shortened Links</span>
             <button
               className="btn-action"
-              onClick={syncHistoryClicks}
+              onClick={() => refreshHistory(query.page)}
               disabled={isSyncingHistory || history.length === 0}
               title="Refresh Clicks"
               style={{ width: '32px', height: '32px', border: 'none', background: 'rgba(255,255,255,0.03)' }}
@@ -266,8 +354,31 @@ function Dashboard({
                 className="history-search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') refreshHistory(1);
+                }}
               />
             </div>
+          )}
+          {history.length > 0 && (
+            <select
+              className="history-search"
+              value={sortBy}
+              onChange={(e) => {
+                setSortBy(e.target.value);
+                syncHistoryClicks({
+                  page: 1,
+                  limit: query.limit,
+                  search: searchQuery.trim(),
+                  sort: e.target.value,
+                });
+              }}
+              style={{ width: '170px', paddingLeft: '1rem' }}
+            >
+              <option value="createdAt">Newest</option>
+              <option value="clicks">Most clicks</option>
+              <option value="expiresAt">Expiry date</option>
+            </select>
           )}
         </div>
 
@@ -279,13 +390,6 @@ function Dashboard({
               <p style={{ fontSize: '0.85rem' }}>Your shortened URLs will appear here so you can copy and track them easily.</p>
             </div>
           </div>
-        ) : filteredHistory.length === 0 ? (
-          <div className="glass-card empty-history">
-            <Search size={36} style={{ color: 'var(--text-muted)' }} />
-            <div>
-              <p style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>No matching links found</p>
-            </div>
-          </div>
         ) : (
           <div className="history-table-wrapper">
             <table className="history-table">
@@ -294,12 +398,13 @@ function Dashboard({
                   <th>Original Link</th>
                   <th>Short Link</th>
                   <th>Clicks</th>
+                  <th>Expires</th>
                   <th>Created At</th>
                   <th style={{ textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredHistory.map((item) => (
+                {history.map((item) => (
                   <tr key={item.shortCode}>
                     <td className="original-url-cell" title={item.longUrl}>
                       {item.longUrl}
@@ -314,6 +419,9 @@ function Dashboard({
                         <BarChart3 size={12} />
                         {item.clicks}
                       </span>
+                    </td>
+                    <td className="date-cell">
+                      {item.expiresAt ? new Date(item.expiresAt).toLocaleDateString() : 'Never'}
                     </td>
                     <td className="date-cell">
                       {new Date(item.createdAt).toLocaleDateString(undefined, {
@@ -356,6 +464,21 @@ function Dashboard({
                 ))}
               </tbody>
             </table>
+            {pagination.totalPages > 1 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.25rem' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                  Page {pagination.page} of {pagination.totalPages} - {pagination.total} links
+                </span>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button className="btn-secondary" disabled={pagination.page <= 1} onClick={() => refreshHistory(pagination.page - 1)}>
+                    Previous
+                  </button>
+                  <button className="btn-secondary" disabled={pagination.page >= pagination.totalPages} onClick={() => refreshHistory(pagination.page + 1)}>
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
